@@ -15,4 +15,3 @@ def create_all(db: Session, model: models, obj: schemas):
     db.commit()
     db.refresh(db_object)
     return db_object
-

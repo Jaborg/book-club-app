@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 
 from .database import Base
 
+
 class Book(Base):
     __tablename__ = "books"
 

@@ -8,22 +8,16 @@ from app import crud, schemas, models
 router = APIRouter(prefix="/members",tags=["members"])
 
 @router.get("/")
-def read_root(db: Session = Depends(get_db)):
+async def read_root(db: Session = Depends(get_db)):
     books = crud.get_all(db,models.Member)
 
     return books
 
 @router.post("/create_member")
-def read_root(
-    name: str = Form(...),
+async def read_root(
+    member: schemas.MemberCreate,
     db: Session = Depends(get_db)):
 
-    member_data = schemas.MemberCreate(
-        name=name,
-        join_date = datetime.utcnow()
-
-    )
-
-    crud.create_all(db, models.Member, member_data)
-    return member_data
+    crud.create_all(db, models.Member, member)
+    return member
 

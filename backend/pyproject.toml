@@ -1,0 +1,18 @@
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+select = [
+  "E",  # pycodestyle
+  "F",  # pyflakes
+  "I",  # import sorting
+  "B",  # bugbear
+  "UP", # pyupgrade
+]
+
+ignore = [
+  "B008",  # FastAPI Depends() false positive
+]
+
+[tool.ruff.format]
+quote-style = "double"

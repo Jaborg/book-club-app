@@ -8,3 +8,5 @@ python-dotenv>=1.0
 pydantic>=2.5,<3
 python-multipart>=0.0.9
 pytest>=7.4
+ruff
+pre-commit

@@ -1,0 +1,5 @@
+.env
+.pyc
+env
+books.db
+__pycache__/

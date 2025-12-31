@@ -16,14 +16,8 @@ class BookCreate(BookBase):
     pass
 
 
-class BookResponse(BaseModel):
-    id: int
-    name: str
-    author: str
-    member_id: int
-    due_date: datetime
-    rating: str
-    initial_date: datetime
+class CreateResponse(BaseModel):
+    message: str
 
     class Config:
         from_attributes = True

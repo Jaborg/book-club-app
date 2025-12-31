@@ -18,31 +18,41 @@ function App() {
     rating: ""
   });
 
-  // Fetch books on load
+  // 🔁 Source-of-truth fetch
+  const fetchBooks = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`${API_URL}/books/`);
+      if (!res.ok) {
+        throw new Error("Failed to load books");
+      }
+      const data = await res.json();
+      setBooks(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load books on mount
   useEffect(() => {
-    fetch(`${API_URL}/books/`)
-      .then((res) => res.json())
-      .then(setBooks)
-      .catch(() => setError("Failed to load books"))
-      .finally(() => setLoading(false));
+    fetchBooks();
   }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-
-    // 1️⃣ Optimistic book
-    const optimisticBook = {
-      id: `temp-${Date.now()}`,
-      ...form
-    };
-
-    setBooks((prev) => [optimisticBook, ...prev]);
 
     try {
       const res = await fetch(`${API_URL}/books/create_book`, {
@@ -58,16 +68,14 @@ function App() {
         })
       });
 
+      const payload = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to create book");
+        throw new Error(payload?.message || "Failed to create book");
       }
 
-      const savedBook = await res.json();
-
-      // 2️⃣ Replace optimistic book with real one
-      setBooks((prev) =>
-        prev.map((b) => (b.id === optimisticBook.id ? savedBook : b))
-      );
+      // 🔁 Re-fetch list (single source of truth)
+      await fetchBooks();
 
       // Reset form
       setForm({
@@ -78,10 +86,6 @@ function App() {
         rating: ""
       });
     } catch (err) {
-      // 3️⃣ Rollback optimistic update
-      setBooks((prev) =>
-        prev.filter((b) => b.id !== optimisticBook.id)
-      );
       setError(err.message);
     } finally {
       setSubmitting(false);

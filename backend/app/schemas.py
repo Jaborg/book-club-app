@@ -3,6 +3,26 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
+class MemberOut(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
+class BookOut(BaseModel):
+    id: int
+    name: str
+    author: str
+    rating: str
+    due_date: datetime
+    member: MemberOut | None = None
+
+    class Config:
+        from_attributes = True
+
+
 class BookBase(BaseModel):
     name: str
     author: str

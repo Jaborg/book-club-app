@@ -1,9 +1,9 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from datetime import datetime
 
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
-from .database import Base
+from app.database import Base
 
 
 class Book(Base):
@@ -19,13 +19,3 @@ class Book(Base):
     initial_date = Column(DateTime, default=datetime.utcnow)
 
     member = relationship("Member", back_populates="books")
-
-
-class Member(Base):
-    __tablename__ = "members"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    join_date = Column(DateTime, default=datetime.utcnow)
-
-    books = relationship("Book", back_populates="member")

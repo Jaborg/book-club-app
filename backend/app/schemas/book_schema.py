@@ -2,13 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-
-class MemberOut(BaseModel):
-    id: int
-    name: str
-
-    class Config:
-        from_attributes = True
+from .member_schema import MemberOut
 
 
 class BookOut(BaseModel):
@@ -41,12 +35,3 @@ class CreateResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class MemberBase(BaseModel):
-    name: str
-
-
-class MemberCreate(MemberBase):
-    join_date: datetime
-    pass

@@ -19,7 +19,7 @@ class BookOut(BaseModel):
     name: str
     author: str
     rating: str
-    due_date: datetime
+    original_due_date: datetime
     member: MemberOut | None = None
 
     class Config:

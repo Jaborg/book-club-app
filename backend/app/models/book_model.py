@@ -14,9 +14,9 @@ class Book(Base):
     author = Column(String, nullable=False)
     member_id = Column(Integer, ForeignKey("members.id"))
 
-    due_date = Column(DateTime, nullable=False)
+    original_due_date = Column(DateTime, nullable=False)
     rating = Column(String, nullable=False)
     initial_date = Column(DateTime, default=datetime.utcnow)
-    revised_date = Column(DateTime, default=None)
+    revised_due_date = Column(DateTime, default=None)
 
     member = relationship("Member", back_populates="books")

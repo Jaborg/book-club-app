@@ -5,6 +5,15 @@ from pydantic import BaseModel, Field
 from .member_schema import MemberOut
 
 
+class BookBase(BaseModel):
+    name: str
+    author: str
+    member_id: int
+    original_due_date: datetime = Field(..., description="The original due date chosen")
+    revised_due_date: datetime = Field(None, description="The revised due date chosen")
+    rating: str = Field(None, description="The book rating")
+
+
 class BookOut(BaseModel):
     id: int
     name: str
@@ -15,14 +24,6 @@ class BookOut(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class BookBase(BaseModel):
-    name: str
-    author: str
-    member_id: int
-    due_date: datetime = Field(..., description="When the book is due to be discussed")
-    rating: str = Field(None, description="The book rating")
 
 
 class BookCreate(BookBase):

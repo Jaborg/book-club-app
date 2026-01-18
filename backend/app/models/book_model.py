@@ -17,5 +17,6 @@ class Book(Base):
     due_date = Column(DateTime, nullable=False)
     rating = Column(String, nullable=False)
     initial_date = Column(DateTime, default=datetime.utcnow)
+    revised_date = Column(DateTime, default=None)
 
     member = relationship("Member", back_populates="books")

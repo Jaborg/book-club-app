@@ -20,8 +20,9 @@ export default function MemberDetail() {
   return (
     <>
       <h1>{member.name}</h1>
+      <h1>Id for member{member.id}</h1>
 
-      <h3>Books assigned</h3>
+      <h3>{member.name} has assigned</h3>
       {books.length === 0 ? (
         <p>No books assigned</p>
       ) : (

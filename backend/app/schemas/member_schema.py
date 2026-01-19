@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
 
 class MemberOut(BaseModel):
@@ -16,5 +16,11 @@ class MemberBase(BaseModel):
 
 
 class MemberCreate(MemberBase):
-    join_date: datetime
-    pass
+    email: EmailStr
+    password: str = Field(min_length=6)
+    join_date: datetime | None = None
+
+
+class MemberLogin(BaseModel):
+    email: EmailStr
+    password: str

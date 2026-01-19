@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from app import crud
@@ -6,6 +7,8 @@ from app.database import get_db
 from app.models.member_model import Member
 from app.schemas.general_schema import CreateResponse
 from app.schemas.member_schema import MemberCreate, MemberOut
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 router = APIRouter(prefix="/members", tags=["members"])
 
@@ -25,5 +28,13 @@ def get_member(member_id: int, db: Session = Depends(get_db)):
 
 @router.post("/create_member", response_model=CreateResponse, status_code=201)
 async def create_member(member: MemberCreate, db: Session = Depends(get_db)):
-    crud.create_all(db, Member, member)
+    # ensure email not already used
+    exists = db.query(Member).filter(Member.email == member.email).first()
+    if exists:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    hashed = pwd_context.hash(member.password)
+    db_member = Member(name=member.name, email=member.email, password_hash=hashed)
+    db.add(db_member)
+    db.commit()
+    db.refresh(db_member)
     return {"message": "Member created successfully"}

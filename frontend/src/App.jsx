@@ -5,6 +5,7 @@ import Books from "./pages/Books";
 import BookDetail from "./pages/BookDetail";
 import Members from "./pages/Members";
 import MemberDetail from "./pages/MemberDetail";
+import Login from "./pages/Login";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/books/:id" element={<BookDetail />} />
           <Route path="/members" element={<Members />} />
           <Route path="/members/:id" element={<MemberDetail />} />
+          <Route path="/login" element={<Login />} />
         </Route>
       </Routes>
     </BrowserRouter>

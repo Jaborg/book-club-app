@@ -33,8 +33,13 @@ async def create_member(member: MemberCreate, db: Session = Depends(get_db)):
     if exists:
         raise HTTPException(status_code=400, detail="Email already registered")
     hashed = pwd_context.hash(member.password)
-    db_member = Member(name=member.name, email=member.email, password_hash=hashed)
-    db.add(db_member)
-    db.commit()
-    db.refresh(db_member)
-    return {"message": "Member created successfully"}
+
+    crud.create_member(
+        db=db,
+        name=member.name,
+        email=member.email,
+        password_hash=hashed,
+        join_date=member.join_date,
+    )
+
+    return {"message": f"{member.name} created successfully"}

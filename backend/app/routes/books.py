@@ -30,7 +30,16 @@ def get_book(book_id: int, db: Session = Depends(get_db)):
 
 @router.post("/create_book", response_model=CreateResponse, status_code=201)
 async def create_book(book: BookCreate, db: Session = Depends(get_db)):
-    crud.create_all(db, Book, book)
+    crud.create_book(
+        db,
+        book.name,
+        book.author,
+        book.member_id,
+        book.original_due_date,
+        book.rating,
+        book.initial_date,
+        book.revised_due_date,
+    )
     return {"message": "Book created successfully"}
 
 

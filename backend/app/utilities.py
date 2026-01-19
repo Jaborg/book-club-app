@@ -31,3 +31,7 @@ def create_access_token(
 
 def decode_access_token(token: str) -> dict[str, Any]:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+
+def is_incorrect_login():
+    return "Incorrect email or password"

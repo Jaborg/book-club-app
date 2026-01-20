@@ -36,3 +36,7 @@ class CreateResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class BookPayload(BaseModel):
+    book_id: int

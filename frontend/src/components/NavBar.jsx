@@ -28,8 +28,12 @@ export default function NavBar() {
         <div className="nav-links" role="navigation" aria-label="Primary">
           <Link to="/books">Books</Link>
           <Link to="/members">Members</Link>
+          <Link to="/groups">Groups</Link>
           {!token ? (
-            <Link to="/login">Login</Link>
+            <>
+              <Link to="/login">Login</Link>
+              <Link to="/register" style={{ marginLeft: 12 }}>Register</Link>
+            </>
           ) : (
             <button onClick={logout} className="btn btn-ghost" style={{ marginLeft: 12 }}>
               Logout

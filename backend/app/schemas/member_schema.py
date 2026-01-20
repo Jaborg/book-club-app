@@ -24,3 +24,7 @@ class MemberCreate(MemberBase):
 class MemberLogin(BaseModel):
     email: EmailStr
     password: str
+
+
+class MemberPayload(BaseModel):
+    member_id: int

@@ -5,7 +5,9 @@ from app.database import get_db
 from app.models.book_group import BookGroup
 from app.models.book_model import Book
 from app.models.member_model import Member
+from app.schemas.book_schema import BookPayload
 from app.schemas.group_schema import GroupCreate, GroupOut
+from app.schemas.member_schema import MemberPayload
 
 router = APIRouter(prefix="/groups", tags=["groups"])
 
@@ -48,3 +50,57 @@ def create_group(payload: GroupCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(group)
     return {"message": "Group created", "id": group.id}
+
+
+@router.post("/{group_id}/add_member", response_model=dict)
+def add_member(group_id: int, payload: MemberPayload, db: Session = Depends(get_db)):
+    group = db.query(BookGroup).filter(BookGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    member = db.query(Member).filter(Member.id == payload.member_id).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    if member in group.members:
+        return {"message": "Member already in group"}
+
+    group.members.append(member)
+    db.add(group)
+    db.commit()
+    return {"message": "Member added"}
+
+
+@router.post("/{group_id}/remove_member", response_model=dict)
+def remove_member(group_id: int, payload: MemberPayload, db: Session = Depends(get_db)):
+    group = db.query(BookGroup).filter(BookGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    member = db.query(Member).filter(Member.id == payload.member_id).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    if member not in group.members:
+        return {"message": "Member not in group"}
+
+    group.members.remove(member)
+    db.add(group)
+    db.commit()
+    return {"message": "Member removed"}
+
+
+@router.post("/{group_id}/set_active_book", response_model=dict)
+def set_active_book(group_id: int, payload: BookPayload, db: Session = Depends(get_db)):
+    group = db.query(BookGroup).filter(BookGroup.id == group_id).first()
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    book = db.query(Book).filter(Book.id == payload.book_id).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    group.active_book = book
+    db.add(group)
+    db.commit()
+    return {"message": "Active book set"}

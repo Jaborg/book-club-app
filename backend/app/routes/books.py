@@ -21,7 +21,7 @@ async def read_root(member_id: int | None = None, db: Session = Depends(get_db))
 
 
 @router.get("/{book_id}", response_model=BookOut)
-def get_book(book_id: int, db: Session = Depends(get_db)):
+async def get_book(book_id: int, db: Session = Depends(get_db)):
     book = db.query(Book).filter(Book.id.is_(book_id)).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")

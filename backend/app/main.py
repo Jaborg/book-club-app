@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
 from app.routes.auth import router as auth_router
 from app.routes.books import router as books_router
+from app.routes.groups import router as groups_router
 from app.routes.members import router as members_router
 
 Base.metadata.create_all(bind=engine)
@@ -21,3 +22,4 @@ app.add_middleware(
 app.include_router(books_router)
 app.include_router(members_router)
 app.include_router(auth_router)
+app.include_router(groups_router)

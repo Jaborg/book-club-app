@@ -22,7 +22,7 @@ export default function NavBar() {
           <span className="logo" aria-hidden>
             📚
           </span>
-          <span className="brand-text">Book Club</span>
+          <span className="brand-text">FatDogReads</span>
         </Link>
 
         <div className="nav-links" role="navigation" aria-label="Primary">

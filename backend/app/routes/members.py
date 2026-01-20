@@ -19,7 +19,7 @@ async def read_root(db: Session = Depends(get_db)):
 
 
 @router.get("/{member_id}", response_model=MemberOut)
-def get_member(member_id: int, db: Session = Depends(get_db)):
+async def get_member(member_id: int, db: Session = Depends(get_db)):
     member = db.query(Member).filter(Member.id.is_(member_id)).first()
     if not member:
         raise HTTPException(status_code=404, detail="Member not found")

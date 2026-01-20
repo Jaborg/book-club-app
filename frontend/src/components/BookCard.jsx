@@ -1,10 +1,34 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getBookCover } from "../api/books";
 
 export default function BookCard({ book }) {
+  const [cover, setCover] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      // Try to fetch a cover image from Google Books. If none, use a DiceBear identicon seeded by book name.
+      const url = await getBookCover(book.name, book.author).catch(() => null);
+      if (!mounted) return;
+      if (url) setCover(url);
+      else {
+        // If the book is assigned to a member, use the member's name as the avatar seed
+        const seed = book.member?.name ?? book.name ?? String(Math.random());
+        setCover(`https://api.dicebear.com/9.x/identicon/svg?seed=${encodeURIComponent(seed)}&size=96`);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [book.name, book.author]);
+
   return (
     <article className="card">
       <div className="card-row">
-        <div className="cover" aria-hidden />
+        <img className="cover" src={cover} alt={`${book.name} cover`} />
 
         <div style={{ flex: 1 }}>
           <h3>{book.name}</h3>

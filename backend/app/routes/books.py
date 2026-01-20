@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app import crud
 from app.database import get_db
+from app.exceptions import ensure_exists
 from app.models.book_model import Book
 from app.schemas.book_schema import BookCreate, BookOut
 from app.schemas.general_schema import CreateResponse
@@ -22,10 +23,8 @@ async def read_root(member_id: int | None = None, db: Session = Depends(get_db))
 
 @router.get("/{book_id}", response_model=BookOut)
 async def get_book(book_id: int, db: Session = Depends(get_db)):
-    book = db.query(Book).filter(Book.id.is_(book_id)).first()
-    if not book:
-        raise HTTPException(status_code=404, detail="Book not found")
-    return book
+    book = crud.get_by_id(db, Book, book_id)
+    return ensure_exists(book, "Book")
 
 
 @router.post("/create_book", response_model=CreateResponse, status_code=201)

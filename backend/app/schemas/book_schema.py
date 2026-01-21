@@ -34,12 +34,5 @@ class BookCreate(BookBase):
     pass
 
 
-class CreateResponse(BaseModel):
-    message: str
-
-    class Config:
-        from_attributes = True
-
-
 class BookPayload(BaseModel):
     book_id: int

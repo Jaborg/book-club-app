@@ -8,6 +8,7 @@ from app.exceptions import conflict, ensure_exists
 from app.models.member_model import Member
 from app.schemas.general_schema import CreateResponse
 from app.schemas.member_schema import MemberCreate, MemberOut
+from app.utilities import admin_required
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -43,3 +44,12 @@ async def create_member(member: MemberCreate, db: Session = Depends(get_db)):
     )
 
     return {"message": f"{member.name} created successfully"}
+
+
+@router.post("/{member_id}/promote", response_model=dict)
+async def promote_member(
+    member_id: int, db: Session = Depends(get_db), _admin=Depends(admin_required)
+):
+    """Admin-only: promote a member to admin status."""
+    member = crud.promote_member_to_admin(db, member_id)
+    return {"message": f"{member.name} promoted to admin"}

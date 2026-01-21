@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
+
+# ensure models that aren't imported via other modules are registered
+from app.models import vote_model  # noqa: F401
 from app.routes.auth import router as auth_router
 from app.routes.books import router as books_router
 from app.routes.groups import router as groups_router

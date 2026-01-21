@@ -47,6 +47,7 @@ def create_member(
     email: str,
     password_hash: str,
     join_date: datetime | None = None,
+    is_admin: bool = False,
 ):
     """Create a new member"""
     db_member = Member(
@@ -54,6 +55,7 @@ def create_member(
         email=email,
         password_hash=password_hash,
         join_date=join_date,
+        is_admin=is_admin,
     )
     db.add(db_member)
     db.commit()
@@ -151,3 +153,142 @@ def set_group_active_book(db: Session, group_id: int, book_id: int):
     db.commit()
     db.refresh(group)
     return group
+
+
+def create_vote(
+    db: Session, group_id: int, creator_id: int, candidate_book_ids: list[int]
+):
+    """Create a Vote with candidate books. Only existing books may be candidates.
+
+    Raises NotFound/BadRequest via helpers on invalid input.
+    """
+    group = get_by_id(db, BookGroup, group_id)
+    if not group:
+        not_found("Group")
+
+    # ensure creator exists and is a member of the group
+    creator = get_by_id(db, Member, creator_id)
+    if not creator:
+        not_found("Member")
+    if creator not in group.members and not creator.is_admin:
+        bad_request("Creator must be a member of the group or an admin")
+
+    # ensure candidate books exist
+    books = db.query(Book).filter(Book.id.in_(candidate_book_ids)).all()
+    if len(books) != len(set(candidate_book_ids)):
+        bad_request("One or more candidate books not found")
+
+    from app.models.vote_model import Vote, VoteCandidate
+
+    vote = Vote(group_id=group_id, created_by_id=creator_id)
+    db.add(vote)
+    db.commit()
+    db.refresh(vote)
+
+    # create candidate entries
+    for bid in candidate_book_ids:
+        vc = VoteCandidate(vote_id=vote.id, book_id=bid)
+        db.add(vc)
+    db.commit()
+    db.refresh(vote)
+    return vote
+
+
+def cast_vote(db: Session, vote_id: int, voter_id: int, book_id: int):
+    """Cast a vote for a candidate book.
+    Prevent double-voting and ensure candidate membership."""
+    from app.models.vote_model import Vote, VoteCandidate, VoteCast
+
+    vote = get_by_id(db, Vote, vote_id)
+    if not vote:
+        not_found("Vote")
+    if not vote.is_open:
+        bad_request("Vote is closed")
+
+    voter = get_by_id(db, Member, voter_id)
+    if not voter:
+        not_found("Member")
+
+    # ensure voter belongs to the group
+    group = get_by_id(db, BookGroup, vote.group_id)
+    if voter not in group.members and not voter.is_admin:
+        bad_request("Voter must be a member of the group")
+
+    # ensure book is a candidate
+    candidate = (
+        db.query(VoteCandidate)
+        .filter(VoteCandidate.vote_id == vote_id, VoteCandidate.book_id == book_id)
+        .first()
+    )
+    if not candidate:
+        bad_request("Book is not a candidate for this vote")
+
+    # ensure not already voted
+    existing = (
+        db.query(VoteCast)
+        .filter(VoteCast.vote_id == vote_id, VoteCast.member_id == voter_id)
+        .first()
+    )
+    if existing:
+        bad_request("Member has already voted")
+
+    cast = VoteCast(vote_id=vote_id, member_id=voter_id, book_id=book_id)
+    db.add(cast)
+    db.commit()
+    db.refresh(cast)
+    return cast
+
+
+def close_vote_and_apply(db: Session, vote_id: int, closer_id: int):
+    """Close a vote, compute winner, set group's active book to winner.
+
+    Returns the winning book id.
+    """
+    from sqlalchemy import func
+
+    from app.models.vote_model import Vote, VoteCast
+
+    vote = get_by_id(db, Vote, vote_id)
+    if not vote:
+        not_found("Vote")
+    if not vote.is_open:
+        bad_request("Vote already closed")
+
+    # closer must be admin (we also check at route level) or group member
+    closer = get_by_id(db, Member, closer_id)
+    if not closer:
+        not_found("Member")
+
+    # tally votes
+    counts = (
+        db.query(VoteCast.book_id, func.count(VoteCast.id).label("cnt"))
+        .filter(VoteCast.vote_id == vote_id)
+        .group_by(VoteCast.book_id)
+        .all()
+    )
+    if not counts:
+        bad_request("No votes cast")
+
+    # pick highest count; tie-breaker: smallest book_id
+    winner_book_id = sorted(counts, key=lambda r: (-r.cnt, r.book_id))[0].book_id
+
+    # set group's active book
+    set_group_active_book(db, vote.group_id, winner_book_id)
+
+    # mark vote closed
+    vote.is_open = False
+    db.add(vote)
+    db.commit()
+    db.refresh(vote)
+    return winner_book_id
+
+
+def promote_member_to_admin(db: Session, member_id: int):
+    member = get_by_id(db, Member, member_id)
+    if not member:
+        not_found("Member")
+    member.is_admin = True
+    db.add(member)
+    db.commit()
+    db.refresh(member)
+    return member

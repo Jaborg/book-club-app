@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr, Field
 class MemberOut(BaseModel):
     id: int
     name: str
+    is_admin: bool = False
 
     class Config:
         from_attributes = True
@@ -19,6 +20,7 @@ class MemberCreate(MemberBase):
     email: EmailStr
     password: str = Field(min_length=6)
     join_date: datetime | None = None
+    is_admin: bool | None = False
 
 
 class MemberLogin(BaseModel):

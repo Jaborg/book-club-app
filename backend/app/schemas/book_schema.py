@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from app.schemas.member_schema import MemberOut as MemberOutFull
+
 from .member_schema import MemberOut
 
 
@@ -21,6 +23,7 @@ class BookOut(BaseModel):
     rating: str
     original_due_date: datetime
     member: MemberOut | None = None
+    member_full: MemberOutFull | None = None
 
     class Config:
         from_attributes = True

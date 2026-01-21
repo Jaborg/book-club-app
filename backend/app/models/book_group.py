@@ -16,3 +16,5 @@ class BookGroup(Base):
     active_book = relationship("Book", foreign_keys=[active_book_id])
     # members relationship uses association table defined in member_model
     members = relationship("Member", secondary="group_members", back_populates="groups")
+    # votes started for this group
+    votes = relationship("Vote", back_populates="group", cascade="all, delete-orphan")
